@@ -1,0 +1,69 @@
+# Topic Taxonomy
+# Pre-defined topics for better organization and evolution tracking
+# GPT-4 will try to match to these, or suggest new ones
+
+topics:
+  # AI Coding Tools
+  - name: Claude Code
+    aliases: [claude-code, claude code]
+    category: ai-coding-tools
+
+  - name: Cursor
+    aliases: [cursor, cursor.sh]
+    category: ai-coding-tools
+
+  - name: GitHub Copilot
+    aliases: [copilot, github-copilot]
+    category: ai-coding-tools
+
+  - name: Windsurf
+    aliases: [windsurf]
+    category: ai-coding-tools
+
+  # Concepts
+  - name: AI Agents
+    aliases: [ai-agents, agents, agentic]
+    category: concepts
+
+  - name: Agent-Native Architecture
+    aliases: [agent-native, agent native]
+    category: concepts
+
+  - name: Prompt Engineering
+    aliases: [prompting, prompt-engineering]
+    category: concepts
+
+  - name: RAG
+    aliases: [rag, retrieval-augmented-generation]
+    category: concepts
+
+  # Development Practices
+  - name: TDD
+    aliases: [tdd, test-driven-development]
+    category: practices
+
+  - name: Pair Programming
+    aliases: [pair-programming, pairing]
+    category: practices
+
+  # Tools & Frameworks
+  - name: LangChain
+    aliases: [langchain]
+    category: frameworks
+
+  - name: OpenAI API
+    aliases: [openai, gpt-4, chatgpt]
+    category: frameworks
+
+  - name: Anthropic API
+    aliases: [anthropic, claude]
+    category: frameworks
+
+# Categories for organization
+categories:
+  - ai-coding-tools
+  - concepts
+  - practices
+  - frameworks
+  - workflows
+  - architecture

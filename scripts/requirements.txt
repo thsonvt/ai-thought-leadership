@@ -1,0 +1,21 @@
+# Python Dependencies for AI Thought Leadership Knowledge Base
+
+# Core dependencies
+feedparser==6.0.11          # RSS feed parsing
+beautifulsoup4==4.12.3      # Web scraping
+requests==2.31.0            # HTTP requests
+PyYAML==6.0.1               # YAML parsing
+python-frontmatter==1.1.0   # Markdown frontmatter parsing
+python-dateutil==2.8.2      # Date parsing
+
+# OpenAI
+openai==1.12.0              # GPT-4 API access
+
+# Notifications
+sendgrid==6.11.0            # Email via SendGrid
+
+# Optional: Markdown to HTML conversion
+markdown==3.5.2             # For digest HTML generation
+
+# Optional: Better date parsing
+python-dateutil==2.8.2

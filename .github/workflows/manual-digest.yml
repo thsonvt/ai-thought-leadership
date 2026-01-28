@@ -1,0 +1,71 @@
+name: Generate Digest (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Days to look back for posts'
+        required: false
+        default: '7'
+      send_notifications:
+        description: 'Send email and Slack notifications'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  generate-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      - name: Generate digest
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cd scripts
+          python digest_generator.py --days ${{ github.event.inputs.days }}
+
+      - name: Commit digest
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Actions"
+
+          git add content/synthesis/
+
+          if ! git diff --staged --quiet; then
+            git commit -m "Manual digest generation: $(date +%Y-%m-%d)"
+            git push
+            echo "DIGEST_CREATED=true" >> $GITHUB_ENV
+          else
+            echo "DIGEST_CREATED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Send notifications
+        if: env.DIGEST_CREATED == 'true' && github.event.inputs.send_notifications == 'true'
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          cd scripts
+          python notification_sender.py
+
+      - name: Summary
+        run: |
+          echo "### Digest Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Days looked back**: ${{ github.event.inputs.days }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Digest created**: $DIGEST_CREATED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Notifications sent**: ${{ github.event.inputs.send_notifications }}" >> $GITHUB_STEP_SUMMARY

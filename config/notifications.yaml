@@ -1,0 +1,45 @@
+# Notification Configuration
+# Controls when and how you receive updates
+
+notifications:
+  enabled: true
+
+  # Frequency: daily, weekly, biweekly, monthly
+  # Note: Content ingestion runs weekly, but you can choose digest frequency
+  frequency: weekly
+
+  # Day and time for digest delivery (for weekly/biweekly)
+  # day: 1-7 (1=Monday, 7=Sunday)
+  # hour: 0-23 (UTC)
+  schedule:
+    day: 1  # Monday
+    hour: 10  # 10am UTC
+
+  email:
+    enabled: true
+    recipients:
+      - your.email@example.com  # UPDATE THIS
+    from_email: noreply@yourdomain.com  # UPDATE THIS
+    subject_prefix: "[AI Thought Leadership]"
+
+  slack:
+    enabled: true
+    # Set SLACK_WEBHOOK_URL as GitHub secret
+    channel: "#ai-research"  # For display purposes
+
+  content:
+    # What to include in notifications
+    include_new_posts: true
+    include_digest: true
+    include_top_quotes: true
+    include_evolution_insights: true
+
+    # Limits
+    max_posts_per_notification: 10
+    max_quotes: 5
+
+  # Notify on specific triggers
+  triggers:
+    new_author_detected: true  # Notify when a new author is discovered
+    controversial_topic: false  # Notify when authors disagree (future feature)
+    trending_topic: false  # Notify when topic mentioned 3+ times (future feature)
