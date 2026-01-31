@@ -184,6 +184,8 @@ OPENAI_API_KEY=sk-...
 | Feature | Status | Notes |
 |---------|--------|-------|
 | **Related articles** | ✅ Done | Expandable cards show 4 related articles by embedding similarity |
+| **Days back parameter** | ✅ Done | `--days-back` CLI arg + `days_back` workflow input for controlling article lookback |
+| **GitHub Actions permissions** | ✅ Done | Fixed `contents: write` permission for workflow push |
 
 ### Pending Tasks
 
@@ -274,14 +276,12 @@ npx mintlify dev  # Runs on localhost:3000
 
 ## Notes for Next Session
 
-1. **Start here**: Implement the Related Articles feature (Phase 4)
-2. **Files to modify**:
-   - `mintlify-starter/docs-assistant/apps/api/api/index.ts`
-   - `mintlify-starter/docs-assistant/apps/api/src/index.ts`
-   - `mintlify-starter/docs-assistant/apps/widget/src/components/SearchWidget.tsx` (or create new)
-3. **Test locally** before deploying
-4. **Deploy**: Push to trigger Vercel auto-deploy
+1. **Remaining Phase 4 tasks**: Quote copy-to-clipboard, "Use for content" workflow
+2. **Test the workflow**: Go to GitHub Actions → Daily Content Ingestion → Run workflow
+   - Use `days_back` parameter (default: 7) to control lookback period
+   - Example: Set `days_back: 30` for 1 month, `90` for 3 months
+3. **Deploy widget changes**: Push to mintlify-starter repo to trigger Vercel auto-deploy
 
 ---
 
-*Last updated: 2026-02-01 06:30 UTC (Related Articles feature completed and tested)*
+*Last updated: 2026-02-01 (Days back parameter and permissions fix committed)*
