@@ -12,6 +12,10 @@ on:
         description: 'Limit number of articles to fetch (optional)'
         required: false
         default: ''
+      days_back:
+        description: 'How many days back to look for articles (e.g., 30 for 1 month, 90 for 3 months)'
+        required: false
+        default: '7'
       force_sync:
         description: 'Force re-sync all articles to Supabase'
         required: false
@@ -21,6 +25,8 @@ on:
 jobs:
   ingest-content:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -43,11 +49,14 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           cd scripts
+          ARGS=""
           if [ -n "${{ github.event.inputs.limit }}" ]; then
-            python scraper.py --limit ${{ github.event.inputs.limit }}
-          else
-            python scraper.py
+            ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
           fi
+          if [ -n "${{ github.event.inputs.days_back }}" ]; then
+            ARGS="$ARGS --days-back ${{ github.event.inputs.days_back }}"
+          fi
+          python scraper.py $ARGS
 
       - name: Commit new content
         run: |

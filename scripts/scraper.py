@@ -284,10 +284,17 @@ def clean_content(html_content):
     content = content.strip()
     return content
 
-def main(dry_run=False, limit=None):
+def main(dry_run=False, limit=None, days_back=7):
     """Main scraper function"""
+    from datetime import timedelta
+
     print("🔍 AI Thought Leadership Scraper")
     print("=" * 50)
+
+    # Calculate cutoff date
+    cutoff_date = datetime.now() - timedelta(days=days_back)
+    print(f"\n📅 Looking for articles from the last {days_back} days")
+    print(f"   (published after {cutoff_date.strftime('%Y-%m-%d')})")
 
     # Load sources
     sources = load_config()
@@ -307,6 +314,12 @@ def main(dry_run=False, limit=None):
 
         # Process each post
         for post in posts:
+            # Check if article is too old
+            if post['published'] < cutoff_date:
+                print(f"  ⏭️  Skipping (too old: {post['published'].strftime('%Y-%m-%d')}): {post['title'][:40]}...")
+                skipped_articles += 1
+                continue
+
             # Check if already exists
             if article_exists(source['id'], post['url']):
                 print(f"  ⏭️  Skipping (exists): {post['title'][:50]}...")
@@ -348,6 +361,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Scrape AI thought leadership content')
     parser.add_argument('--dry-run', action='store_true', help='Test run without saving')
     parser.add_argument('--limit', type=int, help='Limit number of new articles to fetch')
+    parser.add_argument('--days-back', type=int, default=7, help='How many days back to look for articles (default: 7)')
 
     args = parser.parse_args()
 
@@ -356,4 +370,4 @@ if __name__ == '__main__':
         print("⚠️  Warning: OPENAI_API_KEY not set. Metadata extraction will fail.")
         print("   Set it with: export OPENAI_API_KEY='sk-...'")
 
-    main(dry_run=args.dry_run, limit=args.limit)
+    main(dry_run=args.dry_run, limit=args.limit, days_back=args.days_back)
