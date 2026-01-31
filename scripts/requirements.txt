@@ -9,7 +9,11 @@ python-frontmatter==1.1.0   # Markdown frontmatter parsing
 python-dateutil==2.8.2      # Date parsing
 
 # OpenAI
-openai==1.12.0              # GPT-4 API access
+openai>=1.30.0              # GPT-4 API access
+httpx>=0.27.0               # HTTP library (OpenAI dependency)
+
+# Supabase
+supabase>=2.0.0             # Supabase Python client
 
 # Notifications
 sendgrid==6.11.0            # Email via SendGrid

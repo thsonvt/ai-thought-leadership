@@ -4,6 +4,13 @@ Content Scraper for AI Thought Leadership Knowledge Base
 Fetches blog posts via RSS or web scraping and saves to Obsidian vault
 """
 
+# Load environment variables from .env file
+try:
+    from load_env import load_env
+    load_env()
+except ImportError:
+    pass
+
 import feedparser
 import requests
 from bs4 import BeautifulSoup
@@ -16,9 +23,13 @@ import sys
 import os
 from content_processor import process_article
 
+# Get project root directory (parent of scripts/)
+PROJECT_ROOT = Path(__file__).parent.parent
+
 def load_config(config_file='config/sources.yaml'):
     """Load source configuration"""
-    with open(config_file, 'r') as f:
+    config_path = PROJECT_ROOT / config_file
+    with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     return [s for s in config['sources'] if s.get('active', True)]
 
@@ -167,7 +178,7 @@ def article_exists(author_id, url):
     # Create a hash of the URL to use as unique identifier
     url_hash = hashlib.md5(url.encode()).hexdigest()[:8]
 
-    author_dir = Path(f"content/authors/{author_id}")
+    author_dir = PROJECT_ROOT / "content" / "authors" / author_id
     if not author_dir.exists():
         return False
 
@@ -194,7 +205,7 @@ def save_article(article_data, dry_run=False):
     filename = f"{date_str}-{slug}-{url_hash}.md"
 
     # Create author directory if needed
-    author_dir = Path(f"content/authors/{author_id}")
+    author_dir = PROJECT_ROOT / "content" / "authors" / author_id
     author_dir.mkdir(parents=True, exist_ok=True)
 
     filepath = author_dir / filename
@@ -219,21 +230,24 @@ def save_article(article_data, dry_run=False):
 def generate_markdown(article_data, metadata):
     """Generate markdown file with frontmatter"""
 
-    frontmatter = f"""---
-title: "{article_data['title']}"
-author: {article_data['author']}
-author_id: {article_data['author_id']}
-url: {article_data['url']}
-published: {article_data['published'].strftime('%Y-%m-%d')}
-fetched: {datetime.now().strftime('%Y-%m-%d')}
-topics: {metadata.get('topics', [])}
-key_quotes: {yaml.dump(metadata.get('key_quotes', []), default_flow_style=False)}
-stance: {yaml.dump(metadata.get('stance', {}), default_flow_style=False)}
-evolution_note: "{metadata.get('evolution_note', '')}"
-tags: {metadata.get('tags', [])}
----
+    # Build frontmatter as a proper dictionary, then dump as YAML
+    frontmatter_data = {
+        'title': article_data['title'],
+        'author': article_data['author'],
+        'author_id': article_data['author_id'],
+        'url': article_data['url'],
+        'published': article_data['published'].strftime('%Y-%m-%d'),
+        'fetched': datetime.now().strftime('%Y-%m-%d'),
+        'topics': metadata.get('topics', []),
+        'key_quotes': metadata.get('key_quotes', []),
+        'stance': metadata.get('stance', {}),
+        'evolution_note': metadata.get('evolution_note', ''),
+        'tags': metadata.get('tags', [])
+    }
 
-"""
+    frontmatter = "---\n"
+    frontmatter += yaml.dump(frontmatter_data, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    frontmatter += "---\n\n"
 
     # Convert HTML content to markdown (basic conversion)
     content = clean_content(article_data['content'])

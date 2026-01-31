@@ -1,0 +1,93 @@
+name: Daily Content Ingestion
+
+on:
+  schedule:
+    # Every day at 8am UTC
+    - cron: '0 8 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Limit number of articles to fetch (optional)'
+        required: false
+        default: ''
+      force_sync:
+        description: 'Force re-sync all articles to Supabase'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  ingest-content:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      - name: Run content scraper
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cd scripts
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            python scraper.py --limit ${{ github.event.inputs.limit }}
+          else
+            python scraper.py
+          fi
+
+      - name: Commit new content
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Actions"
+
+          git add content/
+
+          if git diff --staged --quiet; then
+            echo "No new content to commit"
+            echo "HAS_NEW_CONTENT=false" >> $GITHUB_ENV
+          else
+            git commit -m "Daily ingestion: $(date +%Y-%m-%d)"
+            echo "HAS_NEW_CONTENT=true" >> $GITHUB_ENV
+          fi
+
+      - name: Push changes
+        if: env.HAS_NEW_CONTENT == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+
+      - name: Sync to Supabase
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          cd scripts
+          if [ "${{ github.event.inputs.force_sync }}" = "true" ]; then
+            python supabase_sync.py --force
+          else
+            python supabase_sync.py
+          fi
+
+      - name: Summary
+        run: |
+          echo "### Daily Ingestion Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date**: $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Content**: $HAS_NEW_CONTENT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Supabase Sync**: ✅ Completed" >> $GITHUB_STEP_SUMMARY
